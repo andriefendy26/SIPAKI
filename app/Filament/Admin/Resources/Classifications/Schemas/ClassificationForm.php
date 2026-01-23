@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources\Classifications\Schemas;
 
+use Dom\Text;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class ClassificationForm
@@ -11,6 +13,10 @@ class ClassificationForm
         return $schema
             ->components([
                 //
+                TextInput::make('name')
+                    ->label('Classification Name')
+                    ->required()
+                    ->maxLength(255),
             ]);
     }
 }
