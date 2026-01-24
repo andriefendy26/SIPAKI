@@ -3,8 +3,11 @@
 namespace App\Filament\Admin\Resources\Reports\Schemas;
 
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Slider;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class ReportForm
@@ -13,24 +16,41 @@ class ReportForm
     {
         return $schema
             ->components([
-                TextInput::make('classification_id')
+                // Section::make('Laporan')
+                // ->schema([
+
+                // ]),
+                Select::make('classification_id')
+                    ->relationship('classification', 'name')
                     ->required()
-                    ->numeric(),
-                TextInput::make('unit_id')
+                    ->label('Klasifikasi'),
+                    // ->numeric(),
+                Select::make('unit_id')
+                    ->relationship('unit', 'name')
                     ->required()
-                    ->numeric(),
+                    // ->numeric()
+                    ->label('Satuan'),
                 DatePicker::make('report_date')
-                    ->required(),
+                    ->required()
+                    ->label('Tanggal Laporan'),
                 Textarea::make('description')
                     ->required()
-                    ->columnSpanFull(),
+                    ->label('Aktivitas'),
                 TextInput::make('target')
-                    ->required(),
-                TextInput::make('realization')
-                    ->required(),
-                TextInput::make('achievement')
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->label('Target'),
+                TextInput::make('realization')
+                    ->required()
+                    ->numeric()
+                    ->label('Realisasi'),
+                Slider::make('achievement')
+                    ->required()
+                    // ->numeric()
+                    ->range(minValue: 0, maxValue: 100)
+                    ->step(1)
+                    ->tooltips()
+                    ->label('Capaian (%)'),
             ]);
     }
 }

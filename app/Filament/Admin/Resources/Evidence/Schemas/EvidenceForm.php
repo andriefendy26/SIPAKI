@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Evidence\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -14,7 +15,7 @@ class EvidenceForm
                 TextInput::make('report_id')
                     ->required()
                     ->numeric(),
-                TextInput::make('file_path')
+                FileUpload::make('file_path')
                     ->required(),
             ]);
     }
