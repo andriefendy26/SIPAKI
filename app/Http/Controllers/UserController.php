@@ -14,13 +14,10 @@ class UserController extends Controller
     }
 
     public function store(Request $request){
-        // $user = User::create($request->all());
-        // $request;
-
         $request->validate([
-            "name",
-            "email",
-            "password",
+            "name" => "required",
+            "email" => "required",
+            "password" => "required",
         ]);
 
         $user = User::create([
@@ -31,6 +28,7 @@ class UserController extends Controller
         $user->save();
         return response()->json([
             "status" => "success",
+            "message" => "Berhasil Mendaftar",
             "data" => $user
         ]);
     }
