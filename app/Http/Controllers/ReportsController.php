@@ -35,6 +35,10 @@ class ReportsController extends Controller
     {
         DB::beginTransaction();
 
+        $classification = [
+            1, 2
+        ];
+
         try {
             $validator = Validator::make($request->all(), [
                 'classification_id' => 'required|exists:classifications,id',
