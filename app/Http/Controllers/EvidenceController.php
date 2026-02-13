@@ -13,7 +13,6 @@ class EvidenceController extends Controller
     {
         try {
             $data = Evidence::with('report')->get();
-
             return response()->json([
                 "status" => 200,
                 "data" => $data,
