@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Evidence;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class EvidenceController extends Controller
@@ -32,17 +33,31 @@ class EvidenceController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'report_id' => 'required|exists:reports,id',
-                'file_path' => 'required|string'
+                'file_path' => 'required|image|mimes:png,jpg,jpeg,gif,webp'
             ]);
+
 
             if ($validator->fails()) {
                 return response()->json([
                     "status" => 422,
                     "message" => $validator->errors()
                 ], 422);
-            }
+            };
 
-            $data = Evidence::create($request->only('report_id', 'file_path'));
+            //ambil file
+            $file = $request->file('file_path');;
+
+            //membuat nama unik
+            $filename = time() . '_' .$file->getClientOriginalName();
+        
+            //store file dan membuat path
+            $path = Storage::disk('public')->put('/images', $file);
+
+            $data = Evidence::create([
+                'report_id' => $request->report_id,
+                'file_path' => $path,
+            ]);
+            // $data = Evidence::create($request->only('report_id', 'file_path'));
 
             return response()->json([
                 "status" => 200,
