@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Evidence\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -17,7 +18,10 @@ class EvidenceTable
                 TextColumn::make('report_id')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('file_path')
+                // TextColumn::make('file_path')
+                //     ->searchable(),
+                ImageColumn::make('file_path')
+                    ->disk("public")   
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()

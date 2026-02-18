@@ -10,12 +10,49 @@ use Illuminate\Support\Facades\DB;
 
 class ReportsController extends Controller
 {
-    public function index()
+    // public function index()
+    // {
+    //     try {
+    //         $data = Report::with(['classification', 'unit', 'evidence'])
+    //                     ->latest()
+    //                     ->get();
+
+    //         return response()->json([
+    //             "status" => 200,
+    //             "data" => $data,
+    //             "message" => "Berhasil mengambil data laporan"
+    //         ], 200);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             "status"=> 400,
+    //             "message" => $e->getMessage()
+    //         ], 400);
+    //     }
+    // }
+    public function index(Request $request)
     {
         try {
-            $data = Report::with(['classification', 'unit', 'evidence'])
-                        ->latest()
-                        ->get();
+
+            $search = $request->query('search');
+
+            $query = Report::with(['classification', 'unit', 'evidence'])
+                        ->latest();
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('description', 'like', "%$search%")
+                    ->orWhere('report_date', 'like', "%$search%")
+                    ->orWhereHas('classification', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%$search%");
+                    })
+                    ->orWhereHas('unit', function ($q3) use ($search) {
+                        $q3->where('name', 'like', "%$search%");
+                    });
+                });
+            }
+
+            $data = $query->get();
 
             return response()->json([
                 "status" => 200,
@@ -30,6 +67,7 @@ class ReportsController extends Controller
             ], 400);
         }
     }
+
 
     public function store(Request $request)
     {
@@ -139,6 +177,56 @@ class ReportsController extends Controller
                 "message" => $e->getMessage()
             ], 400);
         }
+    }
+
+    public function updatePartial(Request $request, $id){
+        DB::beginTransaction();
+
+        try {
+            $data = Report::findOrFail($id);
+
+            $validator = Validator::make($request->all(), [
+                'classification_id' => 'sometimes|exists:classifications,id',
+                'unit_id'           => 'sometimes|exists:units,id',
+                'report_date'       => 'sometimes|date',
+                'description'       => 'sometimes|string',
+                'target'            => 'sometimes|numeric',
+                'realization'       => 'sometimes|numeric',
+                'achievement'       => 'sometimes|numeric',
+
+                // 'evidence'          => 'sometimes|image|mimes:jpg,jpeg,png,webp|max:2048'
+            ]);
+
+            if($validator->fails()){
+                return response()->json([
+                    'status'=> 422,
+                    'message'=> $validator->errors()
+                ], 422);
+            }
+
+            $updateData = $request->all();
+            
+            if(!empty($updateData)){
+                $data->update($updateData);
+            }
+            
+            DB::commit();
+
+            return response()->json([
+                "status" => 200,
+                "data" => $data->load(['classification','unit','evidence']),
+                "message" => "Berhasil update sebagian data laporan"
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                "status"=> 400,
+                "message" => $e->getMessage()
+            ], 400);
+        }
+      
+        
     }
 
     public function destroy($id)

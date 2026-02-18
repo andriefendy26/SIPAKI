@@ -11,11 +11,13 @@ use Illuminate\Support\Facades\Route;
 
 
 
- // Auth
+ // Login
 Route::post("/login" ,[AuthController::class, 'Login']);
-Route::get('/logout', [AuthController::class,'Logout']);
 
 Route::middleware('auth:sanctum')->group(function (){
+    // Logout
+    Route::get('/logout', [AuthController::class,'Logout']);
+    
     // Classifications
     Route::get('/classification', [ClassificationsController::class, 'index']);
     Route::get('/classification/{id}', [ClassificationsController::class, 'index']);
@@ -34,11 +36,18 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get("/report/{id}", [ReportsController::class,"show"]);
     Route::post("/report", [ReportsController::class,"store"]);
     Route::put("/report/{id}", [ReportsController::class,"update"]);
+    Route::patch("/report/{id}", [ReportsController::class,"updatePartial"]);
     Route::delete("/report/{id}", [ReportsController::class,"destroy"]);
 
     // Evidences
     Route::get("/evidence", [EvidenceController::class, "index"]);
     Route::post("/evidence", [EvidenceController::class, "store"]);
     Route::delete("/evidence/{id}", [EvidenceController::class,"destroy"]);
-});
+
+    Route::get("/user", [UserController::class,"show"]);
+
+
+    });
+    // Export to PDF
+    Route::get('users/export/', [UserController::class, 'export']);
 
