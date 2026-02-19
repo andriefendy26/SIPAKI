@@ -11,6 +11,7 @@ use Maatwebsite\Excel\Events\AfterSheet;
 
 class ReportSheet implements FromView, WithEvents
 {
+  
     public function view(): View
     {
         return view('exports.reports', [

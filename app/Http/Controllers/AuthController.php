@@ -29,7 +29,7 @@ class AuthController extends Controller
         };
     
         // $request->session()->regenerate();
-        $token = $user->createToken($user->name."-AuthToken")->plainTextToken;
+        $token = $user->createToken($user->name . "-AuthToken")->plainTextToken;
 
         return response()->json([
             "access_token" => $token

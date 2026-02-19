@@ -79,6 +79,9 @@ class ReportsController extends Controller
             1, 2
         ];
 
+        $user_id = auth()->user()->id;
+        $request->merge(['user_id' => $user_id]);
+
         try {
             $validator = Validator::make($request->all(), [
                 'classification_id' => 'required|exists:classifications,id',

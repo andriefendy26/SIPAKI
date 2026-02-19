@@ -7,6 +7,7 @@ use App\Models\Evidence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Excel;
 
 class EvidenceController extends Controller
 {
@@ -71,5 +72,16 @@ class EvidenceController extends Controller
                 "message" => $e->getMessage()
             ], 400);
         }
+    }
+
+    public function exportView()
+    {
+        
+        return view('exports.evidences', [
+            'title' => 'Data Bukti',
+            'headings' => ['ID', 'Nama Bukti', 'Deskripsi', 'Tanggal Dibuat', 'Tanggal Diperbarui'],
+            'fields' => ['id', 'name', 'description', 'created_at', 'updated_at'],
+            'reports' => Evidence::all()
+        ]);
     }
 }

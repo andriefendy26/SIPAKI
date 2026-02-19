@@ -3,6 +3,7 @@
 namespace App\Exports;
 // namespace App\Exports\Sheets;
 
+use App\Exports\Sheets\EvidenceSheet;
 use App\Models\Report;
 
 use Illuminate\Contracts\View\View;
@@ -19,7 +20,7 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use App\Exports\Sheets\ReportSheet;
 
-class ReportsExport implements WithMultipleSheets
+class ReportsExport implements WithMultipleSheets, WithStyles
 {
     // public function view(): View
     // {
@@ -31,6 +32,21 @@ class ReportsExport implements WithMultipleSheets
     {
         return [
             new ReportSheet(),
+            new EvidenceSheet()
+        ];
+    }
+
+     public function styles(Worksheet $sheet)
+    {
+        return [
+            // Style the first row as bold text.
+            1    => ['font' => ['bold' => true]],
+
+            // Styling a specific cell by coordinate.
+            'B2' => ['font' => ['italic' => true]],
+
+            // Styling an entire column.
+            'C'  => ['font' => ['size' => 16]],
         ];
     }
 }

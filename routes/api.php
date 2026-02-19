@@ -53,3 +53,4 @@ Route::middleware('auth:sanctum')->group(function (){
     // User
     Route::get('/users/export/', [UserController::class, 'export']);
     Route::get('/reports/export', [ReportsController::class,'export']);
+    
