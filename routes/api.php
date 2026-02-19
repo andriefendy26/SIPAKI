@@ -45,7 +45,7 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::delete("/evidence/{id}", [EvidenceController::class,"destroy"]);
 
     Route::get("/user", [UserController::class,"show"]);
-
+    Route::post("/user", [UserController::class,"store"] );
 
     });
     // Export to PDF

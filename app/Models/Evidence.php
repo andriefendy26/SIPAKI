@@ -11,6 +11,7 @@ class Evidence extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'report_id',
         'file_path',
     ];

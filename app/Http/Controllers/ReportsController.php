@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\ReportsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,7 @@ class ReportsController extends Controller
             $search = $request->query('search');
 
             $query = Report::with(['classification', 'unit', 'evidence'])
+                        ->where('user_id', auth()->id())
                         ->latest();
 
             if ($search) {
@@ -75,15 +77,14 @@ class ReportsController extends Controller
     {
         DB::beginTransaction();
 
-        $classification = [
-            1, 2
-        ];
-
-        $user_id = auth()->user()->id;
-        $request->merge(['user_id' => $user_id]);
-
+        // $request->merge(['user_id' => $user_id_auth]);
+        // $request->user_id = $user_id_auth;
+        
         try {
+            $user_id_auth = auth()->id();
+            
             $validator = Validator::make($request->all(), [
+                // "user_id"           => 'required|exists:table,column',
                 'classification_id' => 'required|exists:classifications,id',
                 'unit_id'           => 'required|exists:units,id',
                 'report_date'       => 'required|date',
@@ -100,9 +101,22 @@ class ReportsController extends Controller
                 ], 422);
             }
 
-            $data = Report::create($request->all());
+            $req = [
+                'user_id'           => $user_id_auth,
+                'classification_id' => $request->classification_id,
+                'unit_id'           => $request->unit_id,
+                'report_date'       => $request->report_date,
+                'description'       => $request->description,
+                'target'            => $request->target,
+                'realization'       => $request->realization,
+                'achievement'       => $request->achievement,
+            ];
 
-            DB::commit();
+            // $data = Report::create($request->all());
+
+            $data = Report::create($req);
+
+            // DB::commit();
 
             return response()->json([
                 "status" => 200,
@@ -111,7 +125,7 @@ class ReportsController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
-            DB::rollBack();
+            // DB::rollBack();
 
             return response()->json([
                 "status"=> 400,
@@ -120,6 +134,63 @@ class ReportsController extends Controller
         }
     }
 
+    // public function store(Request $request)
+    // {
+    //     // Pastikan user login
+    //     if (!auth()->check()) {
+    //         return response()->json([
+    //             "status" => 401,
+    //             "message" => "Unauthorized"
+    //         ], 401);
+    //     }
+
+    //     try {
+    //         $user_id_auth = auth()->user()->id;
+
+    //         // Validasi request
+    //         $validated = $request->validate([
+    //             'classification_id' => 'required|exists:classifications,id',
+    //             'unit_id'           => 'required|exists:units,id',
+    //             'report_date'       => 'required|date',
+    //             'description'       => 'required|string',
+    //             'target'            => 'required|numeric|min:0',
+    //             'realization'       => 'required|numeric|min:0',
+    //             'achievement'       => 'required|numeric|min:0'
+    //         ]);
+
+    //         // Simpan dalam transaction
+    //         $data = DB::transaction(function () use ($validated, $user_id_auth) {
+    //             return Report::create([
+    //                 'user_id'           => $user_id_auth,
+    //                 'classification_id' => $validated['classification_id'],
+    //                 'unit_id'           => $validated['unit_id'],
+    //                 'report_date'       => $validated['report_date'],
+    //                 'description'       => $validated['description'],
+    //                 'target'            => $validated['target'],
+    //                 'realization'       => $validated['realization'],
+    //                 'achievement'       => $validated['achievement'],
+    //             ]);
+    //         });
+
+    //         return response()->json([
+    //             "status" => 200,
+    //             "data" => $data,
+    //             "message" => "Berhasil menambahkan data laporan"
+    //         ], 200);
+
+    //     } catch (\Illuminate\Validation\ValidationException $e) {
+    //         return response()->json([
+    //             "status" => 422,
+    //             "message" => $e->errors()
+    //         ], 422);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             "status" => 500,
+    //             "message" => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
     public function show($id)
     {
         try {
