@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ReportsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportsController extends Controller
 {
@@ -252,9 +254,25 @@ class ReportsController extends Controller
             DB::rollBack();
 
             return response()->json([
-                "status"=> 400,
+                "st+atus"=> 400,
                 "message" => $e->getMessage()
             ], 400);
         }
     }
+
+    public function export() 
+    {
+        Excel::store(new ReportsExport(), "report.xlsx" );
+        // Excel::store(new ReportsExport, 'laporan/laporan-harian.xlsx', 'public');
+        return Excel::download(new ReportsExport, 'report.xlsx');
+    }
+
+    public function exportView()
+    {
+        
+        return view('exports.reports', [
+            'reports' => Report::all()
+        ]);
+    }
+    
 }

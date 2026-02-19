@@ -49,5 +49,7 @@ Route::middleware('auth:sanctum')->group(function (){
 
     });
     // Export to PDF
-    Route::get('users/export/', [UserController::class, 'export']);
 
+    // User
+    Route::get('/users/export/', [UserController::class, 'export']);
+    Route::get('/reports/export', [ReportsController::class,'export']);
