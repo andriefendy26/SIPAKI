@@ -41,6 +41,9 @@
         <td colspan="3">{{ $user->unit->name ?? 'DISTRIBUSI' }}</td>
         {{-- <td colspan="4"></td> --}}
     </tr>
+    <tr>
+        <td colspan="8" rowspan="1"></td>
+    </tr>
     {{-- HEADER TABEL --}}
     <tr>
         <th>TANGGAL</th>

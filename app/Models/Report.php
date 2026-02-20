@@ -30,4 +30,17 @@ class Report extends Model
     public function evidence(){
         return $this->hasMany(Evidence::class);
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // protected static function booted()
+    // {
+    //     static::creating(function ($report) {
+    //         if (auth()->check()) {
+    //             $report->user_id = auth()->id();
+    //         }
+    //     });
+    // }
 }

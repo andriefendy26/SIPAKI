@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -40,7 +41,7 @@ class ReportsController extends Controller
             $search = $request->query('search');
 
             $query = Report::with(['classification', 'unit', 'evidence'])
-                        ->where('user_id', auth()->id())
+                        ->where('user_id', Auth::id())
                         ->latest();
 
             if ($search) {
@@ -81,7 +82,7 @@ class ReportsController extends Controller
         // $request->user_id = $user_id_auth;
         
         try {
-            $user_id_auth = auth()->id();
+            $user_id_auth = Auth::id();
             
             $validator = Validator::make($request->all(), [
                 // "user_id"           => 'required|exists:table,column',
