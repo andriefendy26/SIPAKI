@@ -20,33 +20,22 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use App\Exports\Sheets\ReportSheet;
 
-class ReportsExport implements WithMultipleSheets, WithStyles
+class ReportsExport implements WithMultipleSheets
 {
-    // public function view(): View
-    // {
-    //     return view('exports.reports', [
-    //         'reports' => Report::with(['classification', 'unit', 'evidence'])->get()
-    //     ]);
+    protected $startDate;
+    protected $endDate;
+
+    public function __construct($startDate, $endDate)
+    {
+        $this->startDate = $startDate;
+        $this->endDate = $endDate;
+    }
     // }
     public function sheets() : array
     {
         return [
-            new ReportSheet(),
-            new EvidenceSheet()
-        ];
-    }
-
-     public function styles(Worksheet $sheet)
-    {
-        return [
-            // Style the first row as bold text.
-            1    => ['font' => ['bold' => true]],
-
-            // Styling a specific cell by coordinate.
-            'B2' => ['font' => ['italic' => true]],
-
-            // Styling an entire column.
-            'C'  => ['font' => ['size' => 16]],
+            new ReportSheet($this->startDate, $this->endDate),
+            new EvidenceSheet($this->startDate, $this->endDate),
         ];
     }
 }
@@ -65,7 +54,7 @@ class ReportsExport implements WithMultipleSheets, WithStyles
 //     {
 //         return [
 //             'TANGGAL',
-//             'AKTIVITAS',
+//             'AKTIVITAS',T
 //             'TARGET',
 //             'REALISASI',
 //             'SATUAN',

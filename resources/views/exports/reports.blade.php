@@ -12,7 +12,8 @@
     <tr style="background-color: #0088c7; color: white;">
         <td><strong>Icon Nama</strong></td>
         <td><strong>NAMA</strong></td>
-        <td colspan="3">{{ $user->name ?? 'IRWAN' }}</td>
+        <td colspan="3">{{ $user->name ?? 'IRWANS' }}</td>
+        {{-- {{ dd($reports) }} --}}
         <td colspan="1" align="center" rowspan="4">
             <img src="{{ app()->runningInConsole()
     ? public_path('logopdam.png')
@@ -84,7 +85,7 @@
     @endforeach
 
     {{-- TOTAL --}}
-    <tr>
+    <tr style="text-align: center">
         <td></td>
         <td><strong>JUMLAH</strong></td>
         <td>{{ $totalTarget }}</td>

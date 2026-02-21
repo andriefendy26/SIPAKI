@@ -8,7 +8,7 @@
     </tr>
 
     {{-- DATA --}}
-    @foreach ($reports as $evidence)
+    @foreach ($evidences as $evidence)
         <tr>
             <td>{{ $evidence->id }}</td>
             <td>{{ \Carbon\Carbon::parse($evidence->created_at)->format('d/m/Y') }}</td>

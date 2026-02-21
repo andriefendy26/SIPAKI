@@ -117,7 +117,7 @@ class ReportsController extends Controller
 
             $data = Report::create($req);
 
-            // DB::commit();
+            DB::commit();
 
             return response()->json([
                 "status" => 200,
@@ -270,7 +270,6 @@ class ReportsController extends Controller
                 'target'            => 'sometimes|numeric',
                 'realization'       => 'sometimes|numeric',
                 'achievement'       => 'sometimes|numeric',
-
                 // 'evidence'          => 'sometimes|image|mimes:jpg,jpeg,png,webp|max:2048'
             ]);
 
@@ -335,18 +334,53 @@ class ReportsController extends Controller
         }
     }
 
-    public function export() 
-    {
-        Excel::store(new ReportsExport(), "report.xlsx" );
-        // Excel::store(new ReportsExport, 'laporan/laporan-harian.xlsx', 'public');
-        return Excel::download(new ReportsExport, 'report.xlsx');
+    // public function export() 
+    // {
+    //     $user = User::findOrFail(Auth::id());
+    //     $fileName = 'laporan-' . $user->name . '-' . time() . '.xlsx';
+
+    //     Excel::store(new ReportsExport(), $fileName, 'public');
+
+    //     $url = asset('storage/' . $fileName);
+
+    //     return response()->json([
+    //         'message' => 'Export berhasil',
+    //         'url' => $url
+    //     ]);
+    //     // Excel::store(new ReportsExport, 'laporan/laporan-harian.xlsx', 'public');
+    //     return Excel::download(new ReportsExport, $fileName);
+    // }
+    public function exportByDate(Request $request)
+{
+        $start = $request->start_date;
+        $end = $request->end_date;
+
+        $fileName = "laporan_{$start}_{$end}.xlsx";
+
+        Excel::store(
+            new ReportsExport($start, $end),
+            "exports/$fileName",
+            'public'
+        );
+
+        return response()->json([
+            'message' => 'Export berhasil',
+            'id' => Auth::id(),
+            'url' => asset("storage/exports/$fileName")
+            
+        ]);
     }
 
     public function exportView()
     {
-        
+        // $user = User::findOrFail(Auth::id())->load('reports.classification', 'reports.unit', 'reports.evidence');
+        $userId = Auth::id();
         return view('exports.reports', [
-            'reports' => Report::all()
+            // 'user'=> $user,
+            'reports' => Report::with(["user",'classification', 'unit', 'evidence'])
+                        ->where('user_id', $userId)
+                        ->whereBetween('report_date', ['2024-01-01', '2024-12-31'])
+                        ->get() 
         ]);
     }
     

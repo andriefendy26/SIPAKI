@@ -47,10 +47,10 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get("/user", [UserController::class,"show"]);
     Route::post("/user", [UserController::class,"store"] );
 
-    });
     // Export to PDF
+    Route::get('/reports/export', [ReportsController::class,'exportByDate']);
+    Route::get('/users/export/', [UserController::class, 'export']);
+});
 
     // User
-    Route::get('/users/export/', [UserController::class, 'export']);
-    Route::get('/reports/export', [ReportsController::class,'export']);
     
