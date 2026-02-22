@@ -113,7 +113,6 @@ class UserController extends Controller
 
             // upload foto baru
             if ($request->hasFile('photo_profile')) {
-
                 // hapus foto lama
                 if ($user->photo_profile) {
                     Storage::disk('public')->delete($user->photo_profile);
@@ -150,26 +149,89 @@ class UserController extends Controller
         }
     }
 
-    // 🔥 UPDATE PARTIAL PROFILE
+    public function updateProfie(Request $request)
+    {
+        try {
+            $user = User::findOrFail(Auth::id());
+             // upload foto baru
+            if ($request->hasFile('photo_profile')) {
+
+                // hapus foto lama
+                if ($user->photo_profile) {
+                    Storage::disk('public')->delete($user->photo_profile);
+                }
+
+                $photoPath = $request->file('photo_profile')
+                    ->store('profiles', 'public');
+
+                $user->photo_profile = $photoPath;
+            }
+
+            $user->update([
+                'photo_profile' => $user->photo_profile
+            ]);
+
+            return response()->json([
+                'status'=> 'success',
+                'message'=> 'Foto profil berhasil diupdate',
+                'data' => $user
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                "status" => 400,
+                "message" => "Gagal update profile"
+            ]);
+        }
+    }
+
+
+    //  UPDATE PARTIAL PROFILE
     public function updatePartial(Request $request)
     {
         try {
             $user = User::findOrFail(Auth::id());
 
-            $data = $request->only([
+            $request->only([
                 'name',
                 'email',
                 'password',
                 'nik',
                 'jabatan',
-                'bagian'
+                'bagian',
+                'photo_profile'
             ]);
 
-            if (isset($data['password'])) {
-                $data['password'] = Hash::make($data['password']);
+            if (isset($request['password'])) {
+                $request['password'] = Hash::make($request['password']);
             }
 
-            $user->update($data);
+             // upload foto baru
+            if ($request->hasFile('photo_profile')) {
+
+                // hapus foto lama
+                if ($user->photo_profile) {
+                    Storage::disk('public')->delete($user->photo_profile);
+                }
+
+                $photoPath = $request->file('photo_profile')
+                    ->store('profiles', 'public');
+
+                $user->photo_profile = $photoPath;
+            }
+
+            // $user->update($request->all());
+
+              $user->update([
+                "name" => $request->name,
+                "email" => $request->email,
+                "password" => $request->password
+                    ? Hash::make($request->password)
+                    : $user->password,
+                "nik" => $request->nik,
+                "jabatan" => $request->jabatan,
+                "bagian" => $request->bagian
+            ]);
 
             return response()->json([
                 "status" => "success",
@@ -199,7 +261,7 @@ class UserController extends Controller
 
             return response()->json([
                 "status" => "success",
-                "message" => "User berhasil dihapus"
+                "message" => "User berhasil dihapus" 
             ]);
 
         } catch (\Exception $e) {

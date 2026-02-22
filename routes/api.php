@@ -63,6 +63,8 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::patch('/user', [UserController::class, "updatePartial"]);
     Route::delete('/user/{id}', [UserController::class, "destroy"]);
 
+    Route::put('/user/profile', [UserController::class, "updateProfie"]);
+
     // Export to PDF
     Route::get('/reports/export', [ReportsController::class,'exportByDate']);
     Route::get('/users/export/', [UserController::class, 'export']);
