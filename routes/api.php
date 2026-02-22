@@ -5,6 +5,7 @@ use App\Http\Controllers\ClassificationsController;
 use App\Http\Controllers\EvidenceController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\UnitController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,7 +18,7 @@ Route::post("/login" ,[AuthController::class, 'Login']);
 Route::middleware('auth:sanctum')->group(function (){
     // Logout
     Route::get('/logout', [AuthController::class,'Logout']);
-    
+
     // Classifications
     Route::get('/classification', [ClassificationsController::class, 'index']);
     Route::get('/classification/{id}', [ClassificationsController::class, 'index']);
@@ -44,13 +45,25 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::post("/evidence", [EvidenceController::class, "store"]);
     Route::delete("/evidence/{id}", [EvidenceController::class,"destroy"]);
 
-    Route::get("/user", [UserController::class,"show"]);
-    Route::post("/user", [UserController::class,"store"] );
+    // Statistics
+    Route::get('/statistics', [StatisticsController::class, 'ShowByUser']);
+    // Route::get('/statistics/user', [StatisticsController::class, 'ShowByUser']);
+
+
+    // Users
+    Route::get('/user', [function ( Request $request) {
+        return response()->json([
+            "status" => 200,
+            "data" => $request->user()
+        ], 200);
+    }]);
+    Route::get('/user/{id}', [UserController::class, "detail"]);
+    Route::post('/user', [UserController::class, "store"]);
+    Route::put('/user', [UserController::class, "update"]);
+    Route::patch('/user', [UserController::class, "updatePartial"]);
+    Route::delete('/user/{id}', [UserController::class, "destroy"]);
 
     // Export to PDF
     Route::get('/reports/export', [ReportsController::class,'exportByDate']);
     Route::get('/users/export/', [UserController::class, 'export']);
-});
-
-    // User
-    
+});    
