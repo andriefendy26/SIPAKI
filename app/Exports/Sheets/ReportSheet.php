@@ -4,6 +4,7 @@ namespace App\Exports\Sheets;
 
 
 use App\Models\Report;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\FromView;
@@ -24,8 +25,10 @@ class ReportSheet implements FromView, WithEvents, WithColumnWidths
     public function view(): View
     {   
         $userId = Auth::id();
+        $user = User::findOrFail($userId);
 
         return view('exports.reports', [
+            'user' => $user,
             // 'reports' => Report::with(["user",'classification', 'unit', 'evidence'])
             //             ->where('user_id', $userId)
             //             ->whereBetween('report_date', [$this->startDate, $this->endDate])

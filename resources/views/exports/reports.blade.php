@@ -25,14 +25,14 @@
     <tr style="background-color: #0088c7; color: white;">
         <td><strong>Icon NIK</strong></td>
         <td><strong>NIK</strong></td>
-        <td colspan="3">{{ $user->nik ?? '16216143' }}</td>
+        <td colspan="3">{{ $user->nik ?? 'nik' }}</td>
         {{-- <td colspan="4"></td> --}}
     </tr>
 
     <tr style="background-color: #0088c7; color: white;">
         <td><strong>Icon Jabatan</strong></td>
         <td><strong>JABATAN</strong></td>
-        <td colspan="3">{{ $user->position ?? 'STAF PELAKSANA' }}</td>
+        <td colspan="3">{{ $user->jabatan ?? 'STAF ' }}</td>
         {{-- <td colspan="4"></td> --}}
     </tr>
 

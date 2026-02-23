@@ -99,8 +99,9 @@ class UserController extends Controller
     public function update(Request $request)
     {
         try {
-            $user = User::findOrFail(Auth::id());
 
+            $user = User::findOrFail(Auth::id());
+            // $user = User::findOrFail(2);
             $request->validate([
                 "name" => "required",
                 "email" => "required|email|unique:users,email,".$user->id,

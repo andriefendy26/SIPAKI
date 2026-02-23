@@ -375,8 +375,11 @@ class ReportsController extends Controller
     {
         // $user = User::findOrFail(Auth::id())->load('reports.classification', 'reports.unit', 'reports.evidence');
         $userId = Auth::id();
+
+        $user = User::findOrFail($userId);
+
         return view('exports.reports', [
-            // 'user'=> $user,
+            'user'=> $user,
             'reports' => Report::with(["user",'classification', 'unit', 'evidence'])
                         ->where('user_id', $userId)
                         ->whereBetween('report_date', ['2024-01-01', '2024-12-31'])
