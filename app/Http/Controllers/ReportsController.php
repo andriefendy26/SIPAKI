@@ -24,10 +24,34 @@ class ReportsController extends Controller
         try {
 
             $search = $request->query('search');
+            $month = $request->query('month');   // e.g. "januari" or "1"
+            $year  = $request->query('year');
+
+            // convert Indonesian month names to numbers if necessary
+            $monthNumber = null;
+            if ($month) {
+                $months = [
+                    'januari'=>1,'februari'=>2,'maret'=>3,'april'=>4,'mei'=>5,'juni'=>6,
+                    'juli'=>7,'agustus'=>8,'september'=>9,'oktober'=>10,'november'=>11,'desember'=>12
+                ];
+                $lower = strtolower($month);
+                if (isset($months[$lower])) {
+                    $monthNumber = $months[$lower];
+                } elseif (is_numeric($month) && (int)$month >= 1 && (int)$month <= 12) {
+                    $monthNumber = (int)$month;
+                }
+            }
 
             $query = Report::with(['classification', 'unit', 'evidence'])
                         ->where('user_id', Auth::id())
                         ->latest();
+
+            if ($monthNumber) {
+                $query->whereMonth('report_date', $monthNumber);
+            }
+            if ($year) {
+                $query->whereYear('report_date', $year);
+            }
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
@@ -43,6 +67,13 @@ class ReportsController extends Controller
             }
 
             $data = $query->get();
+
+            // jika pemanggil meminta pengelompokan per bulan, tambahkan
+            if ($request->query('group') === 'month') {
+                $data = $data->groupBy(function ($item) {
+                    return \Carbon\Carbon::parse($item->report_date)->isoFormat('MMMM YYYY');
+                });
+            }
 
             return response()->json([
                 "status" => 200,
@@ -432,14 +463,19 @@ class ReportsController extends Controller
     // }
 
 
-    public function genereateExcel()
+    public function genereateExcel(Request $request)
+
     {
         $filePath = storage_path('app/public/template/PDAMTemplate.xlsx');
         $spreadsheet = IOFactory::load($filePath);
 
         $worksheetLaporanHarian = $spreadsheet->getSheetByName('LAPORAN HARIAN');
+        $worksheetBulan         = $spreadsheet->getSheetByName('BULAN');
         $worksheetEvidence1     = $spreadsheet->getSheetByName('EVIDENCE 1');
         $worksheetEvidence2     = $spreadsheet->getSheetByName('EVIDENCE 2');
+
+        // mengubah nama sheet bulan sesuai dengan input bulan dari request
+        $worksheetBulan->setTitle(strtoupper($request->month ?? 'BULAN'));
 
         // =============================================
         // ISI SHEET: LAPORAN HARIAN
@@ -453,16 +489,37 @@ class ReportsController extends Controller
             $worksheetLaporanHarian->setCellValue('C10', $user->bagian);       // BAGIAN
         }
 
-        // Ambil data laporan harian 
-        $laporanHarian = Report::with(["user",'classification', 'unit', 'evidence'])
-                    ->where('user_id', 1)
+        // Ambil data laporan harian dengan opsi filter bulan/tahun
+        $userId = Auth::id();
+        $query = Report::with(["user",'classification', 'unit', 'evidence'])
+                    ->where('user_id', $userId);
+
+        if ($request->has('month')) {
+            $monthParam = $request->get('month');
+            $months = [
+                'januari'=>1,'februari'=>2,'maret'=>3,'april'=>4,'mei'=>5,'juni'=>6,
+                'juli'=>7,'agustus'=>8,'september'=>9,'oktober'=>10,'november'=>11,'desember'=>12
+            ];
+            $lower = strtolower($monthParam);
+            if (isset($months[$lower])) {
+                $query->whereMonth('report_date', $months[$lower]);
+            } elseif (is_numeric($monthParam)) {
+                $query->whereMonth('report_date', (int) $monthParam);
+            }
+        }
+
+        if ($request->has('year')) {
+            $query->whereYear('report_date', $request->get('year'));
+        }
+
+        $laporanHarian = $query
                     ->whereBetween('report_date', ["2024-01-01", "2026-12-31"])
                     ->get();
 
-        $rowLaporan = 14; // mulai dari baris ke-10 
+        $rowLaporan = 14; // mulai dari baris ke-14
 
         foreach ($laporanHarian as $data) {
-            $worksheetLaporanHarian->setCellValue('A' . $rowLaporan,  $data->report_date);
+            $worksheetLaporanHarian->setCellValue('A' . $rowLaporan, value: $data->report_date);
             $worksheetLaporanHarian->setCellValue('B' . $rowLaporan, $data->description);
             $worksheetLaporanHarian->setCellValue('C' . $rowLaporan, $data->target);
             $worksheetLaporanHarian->setCellValue('D' . $rowLaporan, $data->realization);
@@ -472,67 +529,141 @@ class ReportsController extends Controller
             $worksheetLaporanHarian->setCellValue('H' . $rowLaporan, "LIHAT EVIDENCE"); // Placeholder untuk link atau keterangan evidence
             $rowLaporan++;
         }
+        // Isi bottom Value
+
+        $worksheetLaporanHarian->setCellValue('B' . ($rowLaporan), "JUMLAH");
+        $worksheetLaporanHarian->setCellValue('C' . ($rowLaporan), $laporanHarian->sum('target'));
+        $worksheetLaporanHarian->setCellValue('D' . ($rowLaporan), $laporanHarian->sum('realization'));
+        $worksheetLaporanHarian->setCellValue('F' . ($rowLaporan), $laporanHarian->average('achievement'));
+    
+    
+        // =============================================
+        // ISI SHEET: BULAN
+        // =============================================
+
+        // clasifikasi id 1
+        $dataBulanTarget = $laporanHarian->where("classification_id", 1)->sum('target');
+        $dataBulanRealisasi = $laporanHarian->where("classification_id", 1)->sum('realization');
+        $dataBulanAchievement = $laporanHarian->where("classification_id", 1)->sum('achievement');
+        
+
+        // clasifikasi id 2
+        $dataBulanTarget2 = $laporanHarian->where("classification_id", 2)->sum('target');
+        $dataBulanRealisasi2 = $laporanHarian->where("classification_id", 2)->sum('realization');
+        $dataBulanAchievement2 = $laporanHarian->where("classification_id", 2)->sum('achievement');
+        
+        $worksheetBulan->setCellValue('C17', $dataBulanTarget2);
+        $worksheetBulan->setCellValue('D17', $dataBulanRealisasi2);
+        $worksheetBulan->setCellValue('F17', $dataBulanAchievement2);
+
+        $worksheetBulan->setCellValue('C18', $dataBulanTarget);
+        $worksheetBulan->setCellValue('D18', $dataBulanRealisasi);
+        $worksheetBulan->setCellValue('F18', $dataBulanAchievement);
 
         // =============================================
-        // ISI SHEET: EVIDENCE 1
+        // ISI SHEET: EVIDENCE 1 (classification_id = 2)
         // =============================================
-        $evidenceModel = Evidence::all();
+        // Ambil evidence dengan relasi report agar bisa filter berdasarkan classification_id = 2
+        $evidenceModel = Evidence::with('report')
+                            ->whereHas('report', function ($query) use ($userId) {
+                                $query->where('user_id', $userId)
+                                      ->where('classification_id', 2);
+                            })
+                            ->get();
+        
+        // Kelompokkan evidence berdasarkan tanggal laporan (report_date)
+        $evidenceByDate = $evidenceModel->groupBy(function ($item) {
+            return $item->report->report_date ?? 'Tidak ada tanggal';
+        });
+
         $rowEvidence1 = 2;
 
-        foreach ($evidenceModel as $data) {
-            // Kolom A: Tanggal/Waktu
-            $worksheetEvidence1->setCellValue('A' . $rowEvidence1, $data->tanggal ?? '');
+        foreach ($evidenceByDate as $reportDate => $evidences) {
+            // Set tanggal laporan di kolom A
+            $worksheetEvidence1->setCellValue('A' . $rowEvidence1, $reportDate);
 
-            // Kolom B: Tampilkan gambar dari file_path
-            $imagePath = storage_path('app/public/' . $data->file_path);
+            // Kolom untuk gambar mulai dari B
+            $colIndex = 1; // B = kolom 2, jadi mulai dari index 1
+            $maxHeight = 120;
 
-            if (file_exists($imagePath)) {
-                $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
-                $drawing->setName('Evidence ' . $rowEvidence1);
-                $drawing->setDescription('Evidence');
-                $drawing->setPath($imagePath);
-                $drawing->setCoordinates('B' . $rowEvidence1);
-                $drawing->setWidth(200);   // lebar gambar dalam pixel
-                $drawing->setHeight(150);  // tinggi gambar dalam pixel
-                $drawing->setWorksheet($worksheetEvidence1);
+            foreach ($evidences as $data) {
+                $imagePath = storage_path('app/public/' . $data->file_path);
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
 
-                // Sesuaikan tinggi baris agar gambar muat
-                $worksheetEvidence1->getRowDimension($rowEvidence1)->setRowHeight(120);
-            } else {
-                // Jika file tidak ditemukan, isi dengan path saja
-                $worksheetEvidence1->setCellValue('B' . $rowEvidence1, $data->file_path);
+                if (file_exists($imagePath)) {
+                    $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+                    $drawing->setName('Evidence ' . $rowEvidence1 . '_' . $colIndex);
+                    $drawing->setDescription('Evidence');
+                    $drawing->setPath($imagePath);
+                    $drawing->setCoordinates($colLetter . $rowEvidence1);
+                    $drawing->setWidth(150);   // lebar gambar dalam pixel
+                    $drawing->setHeight(120);  // tinggi gambar dalam pixel
+                    $drawing->setWorksheet($worksheetEvidence1);
+                } else {
+                    // Jika file tidak ditemukan, isi dengan path saja
+                    $worksheetEvidence1->setCellValue($colLetter . $rowEvidence1, $data->file_path);
+                }
+
+                $colIndex++;
             }
 
+            // Sesuaikan tinggi baris agar gambar dan tanggal muat
+            $worksheetEvidence1->getRowDimension($rowEvidence1)->setRowHeight($maxHeight);
             $rowEvidence1++;
         }
 
         // =============================================
-        // ISI SHEET: EVIDENCE 2 
+        // ISI SHEET: EVIDENCE 2 (classification_id = 1)
         // =============================================
-        // $evidence2 = Evidence::where('sheet', 2)->get(); // sesuaikan kondisi filter
-        // $rowEvidence2 = 2;
+        // Ambil evidence dengan relasi report agar bisa filter berdasarkan classification_id = 1
+        
+        $evidenceModel2 = Evidence::with('report')
+                            ->whereHas('report', function ($query) use ($userId) {
+                                $query->where('user_id', $userId)
+                                      ->where('classification_id', 1);
+                            })
+                            ->get();
+        
+        // Kelompokkan evidence berdasarkan tanggal laporan (report_date)
+        $evidenceByDate2 = $evidenceModel2->groupBy(function ($item) {
+            return $item->report->report_date ?? 'Tidak ada tanggal';
+        });
 
-        // foreach ($evidence2 as $data) {
-        //     $worksheetEvidence2->setCellValue('A' . $rowEvidence2, $data->tanggal ?? '');
+        $rowEvidence2 = 2;
 
-        //     $imagePath = storage_path('app/public/' . $data->file_path);
-        //     if (file_exists($imagePath)) {
-        //         $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
-        //         $drawing->setName('Evidence2 ' . $rowEvidence2);
-        //         $drawing->setDescription('Evidence 2');
-        //         $drawing->setPath($imagePath);
-        //         $drawing->setCoordinates('B' . $rowEvidence2);
-        //         $drawing->setWidth(200);
-        //         $drawing->setHeight(150);
-        //         $drawing->setWorksheet($worksheetEvidence2);
+        foreach ($evidenceByDate2 as $reportDate => $evidences) {
+            // Set tanggal laporan di kolom A
+            $worksheetEvidence2->setCellValue('A' . $rowEvidence2, $reportDate);
 
-        //         $worksheetEvidence2->getRowDimension($rowEvidence2)->setRowHeight(120);
-        //     } else {
-        //         $worksheetEvidence2->setCellValue('B' . $rowEvidence2, $data->file_path);
-        //     }
+            // Kolom untuk gambar mulai dari B
+            $colIndex = 1; // B = kolom 2, jadi mulai dari index 1
+            $maxHeight = 120;
 
-        //     $rowEvidence2++;
-        // }
+            foreach ($evidences as $data) {
+                $imagePath = storage_path('app/public/' . $data->file_path);
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
+
+                if (file_exists($imagePath)) {
+                    $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+                    $drawing->setName('Evidence2 ' . $rowEvidence2 . '_' . $colIndex);
+                    $drawing->setDescription('Evidence 2');
+                    $drawing->setPath($imagePath);
+                    $drawing->setCoordinates($colLetter . $rowEvidence2);
+                    $drawing->setWidth(150);
+                    $drawing->setHeight(120);
+                    $drawing->setWorksheet($worksheetEvidence2);
+                } else {
+                    // Jika file tidak ditemukan, isi dengan path saja
+                    $worksheetEvidence2->setCellValue($colLetter . $rowEvidence2, $data->file_path);
+                }
+
+                $colIndex++;
+            }
+
+            // Sesuaikan tinggi baris agar gambar dan tanggal muat
+            $worksheetEvidence2->getRowDimension($rowEvidence2)->setRowHeight($maxHeight);
+            $rowEvidence2++;
+        }
 
         // =============================================
         // SIMPAN FILE
@@ -554,6 +685,7 @@ class ReportsController extends Controller
         return response()->json([
             'message' => 'Excel generated successfully',
             'url'     => asset('storage/exports/' . $fileName),
+            "isiLaporanHarian" => $laporanHarian
         ]);
     }
     }
