@@ -4,6 +4,9 @@ namespace App\Exports;
 // namespace App\Exports\Sheets;
 
 use App\Exports\Sheets\EvidenceSheet;
+use App\Exports\Sheets\ReportSheet;
+use App\Exports\Sheets\IkiSheet;
+use App\Exports\Sheets\MrSheet;
 use App\Models\Report;
 
 use Illuminate\Contracts\View\View;
@@ -18,17 +21,26 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use App\Exports\Sheets\ReportSheet;
 
 class ReportsExport implements WithMultipleSheets
 {
     protected $startDate;
     protected $endDate;
+    protected $ikiData;
+    protected $mrData;
 
-    public function __construct($startDate, $endDate)
+    /**
+     * @param string|null $startDate
+     * @param string|null $endDate
+     * @param array $ikiData   optional data passed into the IKI sheet (e.g. indikator arrays)
+     * @param array $mrData    optional data passed into the MR sheet
+     */
+    public function __construct($startDate, $endDate, array $ikiData = [], array $mrData = [])
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
+        $this->ikiData = $ikiData;
+        $this->mrData = $mrData;
     }
     // }
     public function sheets() : array
@@ -36,6 +48,8 @@ class ReportsExport implements WithMultipleSheets
         return [
             new ReportSheet($this->startDate, $this->endDate),
             new EvidenceSheet($this->startDate, $this->endDate),
+            new IkiSheet($this->startDate, $this->endDate, $this->ikiData),
+            new MrSheet($this->startDate, $this->endDate, $this->mrData),
         ];
     }
 }

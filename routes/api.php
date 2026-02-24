@@ -67,4 +67,7 @@ Route::middleware('auth:sanctum')->group(function (){
     // Export to PDF
     Route::get('/reports/export', [ReportsController::class,'exportByDate']);
     Route::get('/users/export/', [UserController::class, 'export']);
-    });    
+    
+
+    Route::get('/export/excel', [ReportsController::class,'genereateExcel']);
+});    
