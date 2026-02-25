@@ -108,7 +108,7 @@ class ReportsController extends Controller
                 'description'       => 'required|string',
                 'target'            => 'required|numeric',
                 'realization'       => 'required|numeric',
-                'achievement'       => 'required|numeric'
+                // 'achievement'       => 'required|numeric'
             ]);
 
             if ($validator->fails()) {
@@ -126,9 +126,8 @@ class ReportsController extends Controller
                 'description'       => $request->description,
                 'target'            => $request->target,
                 'realization'       => $request->realization,
-                'achievement'       => $request->achievement,
+                'achievement'       => ($request->realization != 0) ? $request->realization / $request->target : 0,
             ];
-
             // $data = Report::create($request->all());
 
             $data = Report::create($req);
@@ -296,7 +295,18 @@ class ReportsController extends Controller
                 ], 422);
             }
 
-            $updateData = $request->all();
+            $updateData = [
+                // 'user_id'           => $user_id_auth,
+                'classification_id' => $request->classification_id,
+                'unit_id'           => $request->unit_id,
+                'report_date'       => $request->report_date,
+                'description'       => $request->description,
+                'target'            => $request->target,
+                'realization'       => $request->realization,
+                'achievement'       => ($request->realization != 0) ? $request->realization / $request->target : 0,
+            ];
+
+            // $updateData = $request->all();
             
             if(!empty($updateData)){
                 $data->update($updateData);
@@ -468,6 +478,7 @@ class ReportsController extends Controller
         $filePath = storage_path('app/public/template/PDAMTemplate.xlsx');
         $spreadsheet = IOFactory::load($filePath);
 
+        $worksheetIKI = $spreadsheet->getSheetByName('IKI');
         $worksheetLaporanHarian = $spreadsheet->getSheetByName('LAPORAN HARIAN');
         $worksheetBulan         = $spreadsheet->getSheetByName('BULAN');
         $worksheetEvidence1     = $spreadsheet->getSheetByName('EVIDENCE 1');
@@ -496,8 +507,10 @@ class ReportsController extends Controller
             $worksheetLaporanHarian->setCellValue('C6', $user->nik);          // NIK
             $worksheetLaporanHarian->setCellValue('C8', $user->jabatan);      // JABATAN
             $worksheetLaporanHarian->setCellValue('C10', $user->bagian);       // BAGIAN
-        }
 
+            $worksheetIKI->setCellValue('E26', $user->name);
+            $worksheetIKI->setCellValue('E27', "NIK. " . $user->nik);
+        }
         // Ambil data laporan harian dengan opsi filter bulan/tahun
         $userId = Auth::id();
         $query = Report::with(["user",'classification', 'unit', 'evidence'])
@@ -536,6 +549,9 @@ class ReportsController extends Controller
             $worksheetLaporanHarian->setCellValue('F' . $rowLaporan, $data->achievement);
             $worksheetLaporanHarian->setCellValue('G' . $rowLaporan, $data->classification->name ?? 'tidak diklasifikasikan');
             
+            $worksheetLaporanHarian->setCellValue('F' . ($rowLaporan), $data->achievement);
+            $worksheetLaporanHarian->getStyle('F' . ($rowLaporan))->getNumberFormat()->setFormatCode('0.00%'); // Format sebagai persentase dengan 2 desimal
+            
             // Membuat link LIHAT EVIDENCE
             if ($data->classification_id == 1) {
                 // Jika classification_id = 2, arahkan ke sheet EVIDENCE 1
@@ -547,6 +563,7 @@ class ReportsController extends Controller
 
             $rowLaporan++;
         }
+
 
         // Isi bottom Value
         $worksheetLaporanHarian->setCellValue('B' . ($rowLaporan), "JUMLAH");

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->text('description');
             $table->string('target');
             $table->string('realization');
-            $table->decimal('achievement');
+            $table->double('achievement');
             
             $table->timestamps();
         });
