@@ -464,7 +464,6 @@ class ReportsController extends Controller
 
 
     public function genereateExcel(Request $request)
-
     {
         $filePath = storage_path('app/public/template/PDAMTemplate.xlsx');
         $spreadsheet = IOFactory::load($filePath);
@@ -473,6 +472,16 @@ class ReportsController extends Controller
         $worksheetBulan         = $spreadsheet->getSheetByName('BULAN');
         $worksheetEvidence1     = $spreadsheet->getSheetByName('EVIDENCE 1');
         $worksheetEvidence2     = $spreadsheet->getSheetByName('EVIDENCE 2');
+
+        // Mengatur lebar kolom untuk sheet LAPORAN HARIAN
+        $worksheetLaporanHarian->getColumnDimension('A')->setWidth(20); // Kolom A dengan lebar 20
+        $worksheetLaporanHarian->getColumnDimension('B')->setWidth(30); // Kolom B dengan lebar 30
+        $worksheetLaporanHarian->getColumnDimension('C')->setWidth(15); // Kolom C dengan lebar 15
+        $worksheetLaporanHarian->getColumnDimension('D')->setWidth(15); // Kolom D dengan lebar 15
+        $worksheetLaporanHarian->getColumnDimension('E')->setWidth(20); // Kolom E dengan lebar 20
+        $worksheetLaporanHarian->getColumnDimension('F')->setWidth(15); // Kolom F dengan lebar 15
+        $worksheetLaporanHarian->getColumnDimension('G')->setWidth(25); // Kolom G dengan lebar 25
+        $worksheetLaporanHarian->getColumnDimension('H')->setWidth(20); // Kolom H dengan lebar 20
 
         // mengubah nama sheet bulan sesuai dengan input bulan dari request
         $worksheetBulan->setTitle(strtoupper($request->month ?? 'BULAN'));
@@ -516,7 +525,7 @@ class ReportsController extends Controller
                     ->whereBetween('report_date', ["2024-01-01", "2026-12-31"])
                     ->get();
 
-        $rowLaporan = 14; // mulai dari baris ke-14
+        $rowLaporan = 14;
 
         foreach ($laporanHarian as $data) {
             $worksheetLaporanHarian->setCellValue('A' . $rowLaporan, value: $data->report_date);
@@ -526,16 +535,24 @@ class ReportsController extends Controller
             $worksheetLaporanHarian->setCellValue('E' . $rowLaporan, $data->unit->name ?? 'dokumen');
             $worksheetLaporanHarian->setCellValue('F' . $rowLaporan, $data->achievement);
             $worksheetLaporanHarian->setCellValue('G' . $rowLaporan, $data->classification->name ?? 'tidak diklasifikasikan');
-            $worksheetLaporanHarian->setCellValue('H' . $rowLaporan, "LIHAT EVIDENCE"); // Placeholder untuk link atau keterangan evidence
+            
+            // Membuat link LIHAT EVIDENCE
+            if ($data->classification_id == 1) {
+                // Jika classification_id = 2, arahkan ke sheet EVIDENCE 1
+                $worksheetLaporanHarian->setCellValue('H' . $rowLaporan, '=HYPERLINK("#\'EVIDENCE 1\'!A1", "LIHAT EVIDENCE")');
+            } else if ($data->classification_id == 2) {
+                // Jika classification_id = 1, arahkan ke sheet EVIDENCE 2
+                $worksheetLaporanHarian->setCellValue('H' . $rowLaporan, '=HYPERLINK("#\'EVIDENCE 2\'!A1", "LIHAT EVIDENCE")');
+            }
+
             $rowLaporan++;
         }
-        // Isi bottom Value
 
+        // Isi bottom Value
         $worksheetLaporanHarian->setCellValue('B' . ($rowLaporan), "JUMLAH");
         $worksheetLaporanHarian->setCellValue('C' . ($rowLaporan), $laporanHarian->sum('target'));
         $worksheetLaporanHarian->setCellValue('D' . ($rowLaporan), $laporanHarian->sum('realization'));
         $worksheetLaporanHarian->setCellValue('F' . ($rowLaporan), $laporanHarian->average('achievement'));
-    
     
         // =============================================
         // ISI SHEET: BULAN
@@ -554,11 +571,14 @@ class ReportsController extends Controller
         
         $worksheetBulan->setCellValue('C17', $dataBulanTarget2);
         $worksheetBulan->setCellValue('D17', $dataBulanRealisasi2);
-        $worksheetBulan->setCellValue('F17', $dataBulanAchievement2);
+        // $worksheetBulan->setCellValue('F17', $dataBulanAchievement2);
 
         $worksheetBulan->setCellValue('C18', $dataBulanTarget);
         $worksheetBulan->setCellValue('D18', $dataBulanRealisasi);
-        $worksheetBulan->setCellValue('F18', $dataBulanAchievement);
+        // $worksheetBulan->setCellValue('F18', $dataBulanAchievement);
+
+        $worksheetBulan->setCellValue('E34', $user->name);
+        $worksheetBulan->setCellValue('E35', "NIK. " . $user->nik);
 
         // =============================================
         // ISI SHEET: EVIDENCE 1 (classification_id = 2)
@@ -677,7 +697,8 @@ class ReportsController extends Controller
         $outputFilePath = $outputDir . '/' . $fileName;
 
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-        $writer->setPreCalculateFormulas(false);
+        $writer->setPreCalculateFormulas(true);
+        // $writer->setPreCalculateFormulas(false);
 
 
         $writer->save($outputFilePath);
@@ -688,4 +709,4 @@ class ReportsController extends Controller
             "isiLaporanHarian" => $laporanHarian
         ]);
     }
-    }
+}
