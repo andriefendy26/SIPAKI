@@ -376,30 +376,30 @@ class ReportsController extends Controller
     //     // Excel::store(new ReportsExport, 'laporan/laporan-harian.xlsx', 'public');
     //     return Excel::download(new ReportsExport, $fileName);
     // }
-    public function exportByDate(Request $request)
-    {
-        $start = $request->start_date;
-        $end = $request->end_date;
+    // public function exportByDate(Request $request)
+    // {
+    //     $start = $request->start_date;
+    //     $end = $request->end_date;
 
-        // optionally allow caller to supply additional sheet data
-        $ikiData = $request->input('iki_data', []);
-        $mrData = $request->input('mr_data', []);
+    //     // optionally allow caller to supply additional sheet data
+    //     $ikiData = $request->input('iki_data', []);
+    //     $mrData = $request->input('mr_data', []);
 
-        $fileName = "laporan_{$start}_{$end}.xlsx";
+    //     $fileName = "laporan_{$start}_{$end}.xlsx";
 
-        Excel::store(
-            new ReportsExport($start, $end, $ikiData, $mrData),
-            "exports/$fileName",
-            'public'
-        );
+    //     Excel::store(
+    //         new ReportsExport($start, $end, $ikiData, $mrData),
+    //         "exports/$fileName",
+    //         'public'
+    //     );
 
-        return response()->json([
-            'message' => 'Export berhasil',
-            'id' => Auth::id(),
-            'url' => asset("storage/exports/$fileName")
+    //     return response()->json([
+    //         'message' => 'Export berhasil',
+    //         'id' => Auth::id(),
+    //         'url' => asset("storage/exports/$fileName")
             
-        ]);
-    }
+    //     ]);
+    // }
 
     public function exportView()
     {
@@ -417,22 +417,6 @@ class ReportsController extends Controller
     }
     
 
-
-    // TESTINGGGGGGGGGGGGGG
-    public function uploadTemplate(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls'
-        ]);
-
-        $file = $request->file('file');
-        $filePath = $file->store('uploads', 'public');
-
-        return response()->json([
-            'message' => 'File uploaded successfully',
-            'url' => asset('storage/' . $filePath)
-        ]);
-    }
 
     // public function genereateExcel()
     // {
@@ -478,7 +462,7 @@ class ReportsController extends Controller
         $filePath = storage_path('app/public/template/PDAMTemplate.xlsx');
         $spreadsheet = IOFactory::load($filePath);
 
-        $worksheetIKI = $spreadsheet->getSheetByName('IKI');
+        $worksheetIKI           = $spreadsheet->getSheetByName('IKI');
         $worksheetLaporanHarian = $spreadsheet->getSheetByName('LAPORAN HARIAN');
         $worksheetBulan         = $spreadsheet->getSheetByName('BULAN');
         $worksheetEvidence1     = $spreadsheet->getSheetByName('EVIDENCE 1');
@@ -535,7 +519,7 @@ class ReportsController extends Controller
         }
 
         $laporanHarian = $query
-                    ->whereBetween('report_date', ["2024-01-01", "2026-12-31"])
+                    // ->whereBetween('report_date', ["2024-01-01", "2026-12-31"])
                     ->get();
 
         $rowLaporan = 14;

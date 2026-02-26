@@ -65,8 +65,8 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::put('/user/profile', [UserController::class, "updateProfie"]);
     
     // Export to PDF
-    Route::get('/reports/export', [ReportsController::class,'exportByDate']);
-    Route::get('/users/export/', [UserController::class, 'export']);
+    // Route::get('/reports/export', [ReportsController::class,'exportByDate']);
+    // Route::get('/users/export/', [UserController::class, 'export']);
     
 
     Route::get('/export/excel', [ReportsController::class,'genereateExcel']);

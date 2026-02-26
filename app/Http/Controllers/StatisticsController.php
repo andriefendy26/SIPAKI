@@ -47,7 +47,7 @@ class StatisticsController extends Controller
                 $q->where('user_id', $userId);
             })->count();
             $avgCapaian = Report::where('user_id', $userId)
-                                ->avg('realization');
+                                ->avg('achievement');
 
             return response()->json([
                 "status" => 200,
