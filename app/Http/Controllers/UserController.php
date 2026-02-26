@@ -181,7 +181,8 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 "status" => 400,
-                "message" => "Gagal update profile"
+                "message" => "Gagal update profile",
+                "error" => $e->getMessage()
             ]);
         }
     }
@@ -215,7 +216,7 @@ class UserController extends Controller
                     Storage::disk('public')->delete($user->photo_profile);
                 }
 
-                $photoPath = $request->file('photo_profile')
+                $photoPath = $request->file(key: 'photo_profile')
                     ->store('profiles', 'public');
 
                 $user->photo_profile = $photoPath;
