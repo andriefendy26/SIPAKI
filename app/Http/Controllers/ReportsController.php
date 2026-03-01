@@ -538,12 +538,19 @@ class ReportsController extends Controller
             
             // Membuat link LIHAT EVIDENCE
             if ($data->classification_id == 1) {
-                // Jika classification_id = 2, arahkan ke sheet EVIDENCE 1
-                $worksheetLaporanHarian->setCellValue('H' . $rowLaporan, '=HYPERLINK("#\'EVIDENCE 1\'!A1", "LIHAT EVIDENCE")');
-            } else if ($data->classification_id == 2) {
-                // Jika classification_id = 1, arahkan ke sheet EVIDENCE 2
-                $worksheetLaporanHarian->setCellValue('H' . $rowLaporan, '=HYPERLINK("#\'EVIDENCE 2\'!A1", "LIHAT EVIDENCE")');
+                $worksheetLaporanHarian->setCellValue('H' . $rowLaporan, 'LIHAT');
+                $worksheetLaporanHarian->getCell('H' . $rowLaporan)
+                    ->getHyperlink()
+                    ->setUrl("#'EVIDENCE 2'!A1") // internal sheet link
+                    ->setTooltip('Lihat Evidence 2');
+            } elseif ($data->classification_id == 2) {
+                $worksheetLaporanHarian->setCellValue('H' . $rowLaporan, 'LIHAT');
+                $worksheetLaporanHarian->getCell('H' . $rowLaporan)
+                    ->getHyperlink()
+                    ->setUrl("#'EVIDENCE 1'!A1") // internal sheet link
+                    ->setTooltip('Lihat Evidence 1');
             }
+
 
             $rowLaporan++;
         }
@@ -686,6 +693,24 @@ class ReportsController extends Controller
             $rowEvidence2++;
         }
 
+        foreach ($spreadsheet->getAllSheets() as $sheet) {
+            foreach ($sheet->getRowIterator() as $row) {
+                foreach ($row->getCellIterator() as $cell) {
+                    $value = $cell->getValue();
+                    // Deteksi formula external reference (mengandung '[')
+                    if (is_string($value) && str_starts_with($value, '=') && str_contains($value, '[')) {
+                        // Ambil calculated value lalu set sebagai value biasa
+                        try {
+                            $calculated = $cell->getCalculatedValue();
+                            $cell->setValue($calculated);
+                        } catch (\Exception $e) {
+                            $cell->setValue(null); // fallback jika tidak bisa dihitung
+                        }
+                    }
+                }
+            }
+        }
+
         // =============================================
         // SIMPAN FILE
         // =============================================
@@ -700,9 +725,14 @@ class ReportsController extends Controller
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
         $writer->setPreCalculateFormulas(true);
         // $writer->setPreCalculateFormulas(false);
-
-
         $writer->save($outputFilePath);
+        $spreadsheet->disconnectWorksheets();
+        unset($spreadsheet);
+
+        if (!file_exists($outputFilePath) || filesize($outputFilePath) === 0) {
+            return response()->json(['message' => 'File generation failed'], 500);
+        }
+
 
         return response()->json([
             'message' => 'Excel generated successfully',
