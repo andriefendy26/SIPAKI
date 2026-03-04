@@ -47,7 +47,6 @@ Route::middleware('auth:sanctum')->group(function (){
 
     // Statistics
     Route::get('/statistics', [StatisticsController::class, 'ShowByUser']);
-    // Route::get('/statistics/user', [StatisticsController::class, 'ShowByUser']);
 
 
     // Users

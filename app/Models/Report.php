@@ -20,8 +20,9 @@ class Report extends Model
         'achievement',
     ];
 
+
     protected $casts = [
-        'report_date'  => 'date',
+        'report_date'  => 'date:Y-m-d',
         'target'       => 'decimal:2',
         'realization'  => 'decimal:2',
         'achievement'  => 'decimal:2',
