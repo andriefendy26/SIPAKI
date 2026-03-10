@@ -74,6 +74,37 @@ class EvidenceController extends Controller
         }
     }
 
+    public function destroy($id)
+    {
+        try {
+            $evidence = Evidence::findOrFail($id);
+
+            // Hapus file fisik dari storage
+            if (Storage::disk('public')->exists($evidence->file_path)) {
+                Storage::disk('public')->delete($evidence->file_path);
+            }
+
+            $evidence->delete();
+
+            return response()->json([
+                "status" => 200,
+                "message" => "Evidence berhasil dihapus"
+            ], 200);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                "status" => 404,
+                "message" => "Evidence tidak ditemukan"
+            ], 404);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                "status" => 400,
+                "message" => $e->getMessage()
+            ], 400);
+        }
+    }
+
     public function exportView()
     {
         
