@@ -58,9 +58,11 @@ Route::middleware('auth:sanctum')->group(function (){
     }]);
     Route::get('/user/{id}', [UserController::class, "detail"]);
     Route::post('/user', [UserController::class, "store"]);
-    Route::put('/user', [UserController::class, "update"]);
-    Route::patch('/user', [UserController::class, "updatePartial"]);
+    Route::put('/user', [UserController::class, "update"]);  
+    // Route::patch('/user', [UserController::class, "updatePartial"]);
     Route::delete('/user/{id}', [UserController::class, "destroy"]);
+
+    // update foto profile ni
     Route::put('/user/profile', [UserController::class, "updateProfie"]);
     
     // Export to PDF

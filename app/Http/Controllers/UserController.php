@@ -222,18 +222,18 @@ class UserController extends Controller
                 $user->photo_profile = $photoPath;
             }
 
-            // $user->update($request->all());
+            $user->update($request->all());
 
-              $user->update([
-                "name" => $request->name,
-                "email" => $request->email,
-                "password" => $request->password
-                    ? Hash::make($request->password)
-                    : $user->password,
-                "nik" => $request->nik,
-                "jabatan" => $request->jabatan,
-                "bagian" => $request->bagian
-            ]);
+            // $user->update([
+            //     "name" => $request->name,
+            //     "email" => $request->email,
+            //     "password" => $request->password
+            //         ? Hash::make($request->password)
+            //         : $user->password,
+            //     "nik" => $request->nik,
+            //     "jabatan" => $request->jabatan,
+            //     "bagian" => $request->bagian
+            // ]);
 
             return response()->json([
                 "status" => "success",
@@ -244,7 +244,8 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 "status" => 400,
-                "message" => "Gagal update sebagian"
+                "message" => "Gagal update sebagian",
+                "error" => $e
             ]);
         }
     }
