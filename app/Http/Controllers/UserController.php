@@ -150,14 +150,50 @@ class UserController extends Controller
         }
     }
 
+    // public function updateProfie(Request $request)
+    // {
+    //     try {
+    //         $user = User::findOrFail(Auth::id());
+    //          // upload foto baru
+    //         if ($request->hasFile('photo_profile')) {
+
+    //             // hapus foto lama
+    //             if ($user->photo_profile) {
+    //                 Storage::disk('public')->delete($user->photo_profile);
+    //             }
+
+    //             $photoPath = $request->file('photo_profile')
+    //                 ->store('profiles', 'public');
+
+    //             $user->photo_profile = $photoPath;
+    //         }
+
+    //         $user->update([
+    //             'photo_profile' => $user->photo_profile
+    //         ]);
+
+    //         return response()->json([
+    //             'status'=> 'success',
+    //             'message'=> 'Foto profil berhasil diupdate',
+    //             'data' => $user
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             "status" => 400,
+    //             "message" => "Gagal update profile",
+    //             "error" => $e->getMessage()
+    //         ]);
+    //     }
+    // }
+
     public function updateProfie(Request $request)
     {
         try {
             $user = User::findOrFail(Auth::id());
-             // upload foto baru
-            if ($request->hasFile('photo_profile')) {
 
-                // hapus foto lama
+            if ($request->hasFile('photo_profile')) {
+                // Hapus foto lama jika ada
                 if ($user->photo_profile) {
                     Storage::disk('public')->delete($user->photo_profile);
                 }
@@ -165,24 +201,22 @@ class UserController extends Controller
                 $photoPath = $request->file('photo_profile')
                     ->store('profiles', 'public');
 
+                // ✅ Gunakan save() agar pasti tersimpan ke DB
                 $user->photo_profile = $photoPath;
+                $user->save();
             }
 
-            $user->update([
-                'photo_profile' => $user->photo_profile
-            ]);
-
             return response()->json([
-                'status'=> 'success',
-                'message'=> 'Foto profil berhasil diupdate',
-                'data' => $user
+                'status'  => 'success',
+                'message' => 'Foto profil berhasil diupdate',
+                'data'    => $user->fresh() // ✅ Ambil data terbaru dari DB
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
-                "status" => 400,
-                "message" => "Gagal update profile",
-                "error" => $e->getMessage()
+                'status'  => 'error',
+                'message' => 'Gagal update profile',
+                'error'   => $e->getMessage()
             ]);
         }
     }
