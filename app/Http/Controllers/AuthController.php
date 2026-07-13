@@ -11,32 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AuthController extends Controller
 {
-    //old login
-    //  public function Login(Request $request)
-    // {
-    //     $credentials = $request->validate([
-    //         'email' => ['required', 'email'],
-    //         'password' => ['required'],
-    //     ]);
-
-    //     $user = User::where('email', $credentials['email'])->first();
-        
-    //     if(!$user || !Hash::check($credentials['password'], $user->password)){
-    //         return response()->json([
-    //             "status" => "error",
-    //             "message" => "Username atau Password Salah"
-    //         ], 401);
-    //     };
-    
-    //     // $request->session()->regenerate();
-    //     $token = $user->createToken($user->name . "-AuthToken")->plainTextToken;
-
-    //     return response()->json([
-    //         "access_token" => $token,
-    //         "data" => $user,
-    //         "message" => "Login Berhasil"
-    //     ]);
-    // }
+ 
      public function Login(Request $request)
     {
         $credentials = $request->validate([

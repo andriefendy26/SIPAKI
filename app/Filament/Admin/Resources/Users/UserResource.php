@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\Users\Pages\EditUser;
 use App\Filament\Admin\Resources\Users\Pages\ListUsers;
 use App\Filament\Admin\Resources\Users\Pages\ViewUser;
 use App\Filament\Admin\Resources\Users\Actions\ExcelExportAction;
+use App\Filament\Admin\Resources\Users\Schemas\UserForm;
 use App\Models\User;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -14,10 +15,10 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\TextInput;
-use Filament\Infolists\Components\TextEntry;     // ✅ TextEntry lives here, NOT Schemas\Components
+use Filament\Infolists\Components\TextEntry;   
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Section;         // ✅ Layout components (Section, Grid) live in Schemas
-use Filament\Schemas\Schema;                     // ✅ v4: both form() and infolist() use Schema
+use Filament\Schemas\Components\Section;        
+use Filament\Schemas\Schema;                    
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -33,28 +34,29 @@ class UserResource extends Resource
     // ✅ v4: signature is form(Schema $schema): Schema — NOT Form $form: Form
     public static function form(Schema $schema): Schema
     {
-        return $schema->components([
-            TextInput::make('name')
-                ->required(),
+        // return $schema->components([
+        //     TextInput::make('name')
+        //         ->required(),
 
-            TextInput::make('email')
-                ->email()
-                ->required()
-                ->unique(ignoreRecord: true),
+        //     TextInput::make('email')
+        //         ->email()
+        //         ->required()
+        //         ->unique(ignoreRecord: true),
 
-            TextInput::make('password')
-                ->password()
-                ->minLength(6)
-                ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
-                ->dehydrated(fn ($state) => filled($state))  // prevent overwriting with null on edit
-                ->nullable(),
+        //     TextInput::make('password')
+        //         ->password()
+        //         ->minLength(6)
+        //         ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
+        //         ->dehydrated(fn ($state) => filled($state))  // prevent overwriting with null on edit
+        //         ->nullable(),
 
-            TextInput::make('nik'),
+        //     TextInput::make('nik'),
 
-            TextInput::make('jabatan'),
+        //     TextInput::make('jabatan'),
 
-            TextInput::make('bagian'),
-        ]);
+        //     TextInput::make('bagian'),
+        // ]);
+        return UserForm::configure($schema);
     }
 
     // ─── Table (index) ────────────────────────────────────────────────────────

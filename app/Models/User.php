@@ -28,7 +28,8 @@ class User extends Authenticatable
         'photo_profile',
         'nik',
         'jabatan',
-        'bagian'
+        // 'bagian',
+        'id_bagian',
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -51,6 +52,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function bagian(){
+        return $this->belongsTo(Bagian::class, 'id_bagian');
     }
 
     public function reports()

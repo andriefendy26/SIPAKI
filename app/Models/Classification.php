@@ -12,7 +12,13 @@ class Classification extends Model
 
     protected $fillable = [
         'name',
+        'id_bagian',
     ];
+    
+    public function bagian(){
+        return $this->belongsTo(Bagian::class, 'id_bagian');
+    }
+
     public function reports(){
         return $this->hasMany(Report::class);
     }

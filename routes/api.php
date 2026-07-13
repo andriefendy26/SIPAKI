@@ -56,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function (){
             "data" => $request->user()
         ], 200);
     }]);
+    
     Route::get('/user/{id}', [UserController::class, "detail"]);
     Route::post('/user', [UserController::class, "store"]);
     Route::put('/user', [UserController::class, "update"]);  

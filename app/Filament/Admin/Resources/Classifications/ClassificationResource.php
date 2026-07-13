@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ClassificationResource extends Resource
 {
@@ -37,6 +38,15 @@ class ClassificationResource extends Resource
         return [
             //
         ];
+    }
+
+
+   
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('id_bagian', auth()->user()->id_bagian);
     }
 
     public static function getPages(): array
