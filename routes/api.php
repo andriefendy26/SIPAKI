@@ -70,6 +70,6 @@ Route::middleware('auth:sanctum')->group(function (){
     // Route::get('/reports/export', [ReportsController::class,'exportByDate']);
     // Route::get('/users/export/', [UserController::class, 'export']);
     
-
+    //yang mau di perbaiki
     Route::get('/export/excel', [ReportsController::class,'genereateExcel']);
 });    

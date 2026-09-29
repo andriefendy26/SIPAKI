@@ -18,7 +18,7 @@ class ReportSheet implements FromView, WithEvents, WithColumnWidths
     protected $endDate;
     public function __construct($startDate, $endDate)
     {
-        $this->startDate = $startDate;
+        $this->startDate  = $startDate;
         $this->endDate = $endDate;
     }
 

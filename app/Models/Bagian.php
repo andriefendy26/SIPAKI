@@ -7,18 +7,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Bagian extends Model
 {
-    //
     use HasFactory;
 
     protected $fillable = [
         'name',
+        'excel_template',
+        'excel_config', 
     ];
 
-    public function users(){
+    protected $casts = [
+        'excel_config' => 'array',
+    ];
+
+    public function users()
+    {
         return $this->hasMany(User::class, 'id_bagian');
     }
 
-    public function classifications(){
+    public function classifications()
+    {
         return $this->hasMany(Classification::class, 'id_bagian');
     }
 }

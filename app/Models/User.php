@@ -34,7 +34,7 @@ class User extends Authenticatable
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var list<string>7
      */
     protected $hidden = [
         'password',
@@ -54,7 +54,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function bagian(){
+    public function bagianRef(){
         return $this->belongsTo(Bagian::class, 'id_bagian');
     }
 

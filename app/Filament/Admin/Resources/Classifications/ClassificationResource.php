@@ -41,7 +41,6 @@ class ClassificationResource extends Resource
     }
 
 
-   
 
     public static function getEloquentQuery(): Builder
     {
