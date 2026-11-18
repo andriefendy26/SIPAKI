@@ -36,7 +36,7 @@ class UserForm
                 Select::make('id_bagian')
                     ->label('Bagian')
                     // ->relationship('bagian', 'name')
-                    ->relationship(name: 'bagian', titleAttribute: 'name')
+                    ->relationship(name: 'bagianRef', titleAttribute: 'name')
                     // ->loadingMessage('Loading Bagian...')
                     ->required(),
                     // ->searchable(),

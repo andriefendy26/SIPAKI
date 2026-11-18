@@ -15,11 +15,16 @@ class Classification extends Model
         'id_bagian',
     ];
     
-    public function bagian(){
-        return $this->belongsTo(Bagian::class, 'id_bagian');
-    }
+    // public function bagian(){
+    //     return $this->belongsTo(Bagian::class, 'id_bagian');
+    // }
 
     public function reports(){
         return $this->hasMany(Report::class);
+    }
+
+    public function bagian()
+    {
+        return $this->belongsToMany(Bagian::class, 'classification_bagian', 'id_classification', 'bagian_id');
     }
 }
